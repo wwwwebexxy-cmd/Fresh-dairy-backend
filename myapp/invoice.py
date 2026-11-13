@@ -23,11 +23,11 @@ VAT_RATE = Decimal("0.05")
 PAGE_WIDTH, BASE_PAGE_HEIGHT = portrait((216 * mm, 303 * mm))
 INK = HexColor("#111111")
 MUTED = HexColor("#424242")
-ORANGE = HexColor("#ff9000")
-SLATE = HexColor("#4f6973")
+ORANGE = HexColor("#1685c8")
+SLATE = HexColor("#07517f")
 LIGHT_ORANGE = HexColor("#fff4e5")
 TABLE_LINE = HexColor("#222222")
-LIFE_LINE_LOGO_PATH = Path(__file__).with_name("assets") / "life-line-package-logo.png"
+FRESH_DAIRY_LOGO_PATH = Path(__file__).with_name("assets") / "fresh-dairy-package-logo.png"
 MARGIN = 48
 CONTENT_WIDTH = PAGE_WIDTH - MARGIN * 2
 
@@ -48,11 +48,11 @@ def _money_text(value):
 
 
 def _invoice_number(order):
-    return f"INV-LL26-{order.pk:04d}"
+    return f"INV-FD26-{order.pk:04d}"
 
 
 def _order_number(order):
-    return f"LL26/{order.pk:04d}"
+    return f"FD26/{order.pk:04d}"
 
 
 def _full_name(order):
@@ -85,39 +85,22 @@ def _address_lines(address):
 
 
 def _draw_logo(pdf, x, y, scale=1):
-    if LIFE_LINE_LOGO_PATH.is_file():
-        image = ImageReader(str(LIFE_LINE_LOGO_PATH))
+    if FRESH_DAIRY_LOGO_PATH.is_file():
+        image = ImageReader(str(FRESH_DAIRY_LOGO_PATH))
         image_width, image_height = image.getSize()
-        # The supplied logo is placed on a white canvas. Crop that whitespace
-        # at render time so the invoice gets the actual mark, not a tiny logo
-        # surrounded by the source image margins.
-        crop_left, crop_top, crop_right, crop_bottom = 28, 36, 250, 125
-        crop_width = crop_right - crop_left
-        crop_height = crop_bottom - crop_top
         box_width = 78 * scale
         box_height = 70 * scale
-        crop_scale = min(box_width / crop_width, box_height / crop_height)
-        draw_width = image_width * crop_scale
-        draw_height = image_height * crop_scale
-        crop_draw_width = crop_width * crop_scale
-        crop_draw_height = crop_height * crop_scale
-        draw_x = x + (box_width - crop_draw_width) / 2 - crop_left * crop_scale
-        draw_y = y + (box_height - crop_draw_height) / 2 - (image_height - crop_bottom) * crop_scale
-
-        pdf.saveState()
-        clip = pdf.beginPath()
-        clip.rect(x, y, box_width, box_height)
-        pdf.clipPath(clip, stroke=0, fill=0)
+        image_scale = min(box_width / image_width, box_height / image_height)
+        draw_width = image_width * image_scale
+        draw_height = image_height * image_scale
         pdf.drawImage(
             image,
-            draw_x,
-            draw_y,
+            x + (box_width - draw_width) / 2,
+            y + (box_height - draw_height) / 2,
             width=draw_width,
             height=draw_height,
-            preserveAspectRatio=False,
             mask="auto",
         )
-        pdf.restoreState()
         return
 
     # Keep the vector fallback for older deployments where the bundled asset
@@ -128,11 +111,11 @@ def _draw_logo(pdf, x, y, scale=1):
     pdf.rect(x + 15 * scale, y + 55 * scale, 17 * scale, 7 * scale, fill=1, stroke=0)
     pdf.rect(x + 15 * scale, y + 42 * scale, 17 * scale, 7 * scale, fill=1, stroke=0)
     pdf.setFillColor(SLATE)
-    pdf.setFont("Helvetica-Bold", 19 * scale)
-    pdf.drawString(x + 3 * scale, y + 22 * scale, "life-line")
+    pdf.setFont("Helvetica-Bold", 14 * scale)
+    pdf.drawString(x + 3 * scale, y + 22 * scale, "Fresh Dairy")
     pdf.setFillColor(ORANGE)
     pdf.setFont("Helvetica-Oblique", 6 * scale)
-    pdf.drawRightString(x + 73 * scale, y + 13 * scale, "Seriously Different")
+    pdf.drawRightString(x + 73 * scale, y + 13 * scale, "Savoring Tradition")
     pdf.restoreState()
 
 
@@ -365,11 +348,11 @@ def _draw_summary(pdf, order, page_height, rows):
     pdf.setFont("Helvetica", 7.2)
     method = _clean(order.get_payment_method_display() if hasattr(order, "get_payment_method_display") else order.payment_method)
     pdf.drawString(left_x, note_y, f"This invoice amount has been paid by {method}")
-    pdf.drawString(left_x, note_y - 19, "Thank you for shopping at the LIFE-LINE.")
+    pdf.drawString(left_x, note_y - 19, "Thank you for choosing The Fresh Dairy Delight FZE.")
     pdf.drawString(left_x, note_y - 42, "If you have any questions regarding this invoice or the goods")
     pdf.drawString(left_x, note_y - 53, "delivered, please contact our Customer Service Department.")
-    pdf.drawString(left_x, note_y - 76, "Phone: +971 547369369   All Day ; 9:00 - 22:00")
-    pdf.drawString(left_x, note_y - 87, "Web: the configured site/support")
+    pdf.drawString(left_x, note_y - 76, "Call or WhatsApp: +97152539846 / +971525418705 / 065299221")
+    pdf.drawString(left_x, note_y - 87, "Website: visit our Contact page for enquiries.")
 
 
 def _draw_social_icon(pdf, platform, x, y, size):
@@ -461,14 +444,15 @@ def render_tax_invoice(order):
     pdf.setFillColor(INK)
     pdf.setFont("Helvetica-Bold", 20)
     pdf.drawString(MARGIN, top - 18, "Tax Invoice")
-    seller_name = getattr(settings, "INVOICE_SELLER_NAME", "Life-line")
+    seller_name = getattr(settings, "INVOICE_SELLER_NAME", "The Fresh Dairy Delight FZE")
     seller_lines = [
         seller_name,
-        getattr(settings, "INVOICE_SELLER_ADDRESS", "Configured seller address"),
-        getattr(settings, "INVOICE_SELLER_CITY", "Configured seller city"),
-        getattr(settings, "INVOICE_SELLER_COUNTRY", "Configured seller country"),
-        f"VAT No: {getattr(settings, 'INVOICE_SELLER_VAT_NUMBER', 'Not configured')}",
+        getattr(settings, "INVOICE_SELLER_ADDRESS", ""),
+        getattr(settings, "INVOICE_SELLER_CITY", ""),
+        getattr(settings, "INVOICE_SELLER_COUNTRY", ""),
+        f"VAT No: {getattr(settings, 'INVOICE_SELLER_VAT_NUMBER', '')}" if getattr(settings, "INVOICE_SELLER_VAT_NUMBER", "") else "",
     ]
+    seller_lines = [line for line in seller_lines if str(line).strip()]
     pdf.setFont("Helvetica-Bold", 8.5)
     pdf.drawString(MARGIN, top - 41, _clean(seller_lines[0]))
     pdf.setFont("Helvetica", 8.5)
@@ -479,7 +463,7 @@ def render_tax_invoice(order):
     invoice_date = localtime(order.created_at).strftime("%d.%m.%Y") if order.created_at else "-"
     left_y = top - 177
     _draw_label_value(pdf, "Tax Invoice Number", _invoice_number(order), MARGIN, left_y, MARGIN + 125)
-    _draw_label_value(pdf, "LIFE-LINE Order Number", _order_number(order), MARGIN, left_y - 17, MARGIN + 125)
+    _draw_label_value(pdf, "Fresh Dairy Order Number", _order_number(order), MARGIN, left_y - 17, MARGIN + 125)
     _draw_label_value(pdf, "Invoice Date", invoice_date, MARGIN, left_y - 34, MARGIN + 125)
     _draw_label_value(pdf, "Due Date", invoice_date, MARGIN, left_y - 51, MARGIN + 125)
 

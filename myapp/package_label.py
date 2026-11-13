@@ -19,9 +19,9 @@ from .sku import resolve_order_item_sku
 
 
 PAGE_WIDTH, BASE_PAGE_HEIGHT = landscape(A6)
-ORANGE = HexColor("#ff9000")
+ORANGE = HexColor("#1685c8")
 INK = HexColor("#111111")
-PACKAGE_LOGO_PATH = Path(__file__).with_name("assets") / "life-line-package-logo.png"
+PACKAGE_LOGO_PATH = Path(__file__).with_name("assets") / "fresh-dairy-package-logo.png"
 
 
 def _clean(value, fallback="—"):
@@ -147,33 +147,17 @@ def _draw_logo(pdf, x, y, width=72, height=62):
     if PACKAGE_LOGO_PATH.is_file():
         image = ImageReader(str(PACKAGE_LOGO_PATH))
         image_width, image_height = image.getSize()
-        # The supplied logo is a white canvas with generous whitespace. Clip
-        # that canvas to the actual mark while keeping the original asset.
-        crop_left, crop_top, crop_right, crop_bottom = 28, 36, 250, 125
-        crop_width = crop_right - crop_left
-        crop_height = crop_bottom - crop_top
-        scale = min(width / crop_width, height / crop_height)
-        draw_width = image_width * scale
-        draw_height = image_height * scale
-        crop_draw_width = crop_width * scale
-        crop_draw_height = crop_height * scale
-        draw_x = x + (width - crop_draw_width) / 2 - crop_left * scale
-        draw_y = y + (height - crop_draw_height) / 2 - (image_height - crop_bottom) * scale
-
-        pdf.saveState()
-        clip = pdf.beginPath()
-        clip.rect(x, y, width, height)
-        pdf.clipPath(clip, stroke=0, fill=0)
+        image_scale = min(width / image_width, height / image_height)
+        draw_width = image_width * image_scale
+        draw_height = image_height * image_scale
         pdf.drawImage(
             image,
-            draw_x,
-            draw_y,
+            x + (width - draw_width) / 2,
+            y + (height - draw_height) / 2,
             width=draw_width,
             height=draw_height,
-            preserveAspectRatio=False,
             mask="auto",
         )
-        pdf.restoreState()
         return
 
     # Keep a small fallback for environments where the bundled image is not
@@ -183,17 +167,17 @@ def _draw_logo(pdf, x, y, width=72, height=62):
     pdf.rect(x + 27 * scale, y + 47 * scale, 25 * scale, 25 * scale, fill=1, stroke=0)
     pdf.rect(x + 15 * scale, y + 55 * scale, 17 * scale, 7 * scale, fill=1, stroke=0)
     pdf.rect(x + 15 * scale, y + 42 * scale, 17 * scale, 7 * scale, fill=1, stroke=0)
-    pdf.setFillColor(HexColor("#4f6973"))
-    pdf.setFont("Helvetica-Bold", 19 * scale)
-    pdf.drawString(x + 3 * scale, y + 22 * scale, "life-line")
+    pdf.setFillColor(HexColor("#07517f"))
+    pdf.setFont("Helvetica-Bold", 14 * scale)
+    pdf.drawString(x + 3 * scale, y + 22 * scale, "Fresh Dairy")
     pdf.setFillColor(ORANGE)
     pdf.setFont("Helvetica-Oblique", 6 * scale)
-    pdf.drawRightString(x + 73 * scale, y + 13 * scale, "Seriously Different")
+    pdf.drawRightString(x + 73 * scale, y + 13 * scale, "Savoring Tradition")
 
 
 def _draw_barcode(pdf, value, x, y, width_limit, height, bar_width=0.8, human=True):
     barcode = code128.Code128(
-        _clean(value, "LL26-0001").replace("—", "-")[:40],
+        _clean(value, "FD26-0001").replace("—", "-")[:40],
         barHeight=height,
         barWidth=bar_width,
         humanReadable=human,
@@ -235,7 +219,7 @@ def render_package_label(order):
 
     items = list(order.items.all())
     contexts = [_item_context(item) for item in items]
-    order_number = f"LL26/{order.pk:04d}"
+    order_number = f"FD26/{order.pk:04d}"
     package_code = order_number.replace("/", "-")
     address = order.address
     customer_name = _full_name(order)
@@ -340,8 +324,8 @@ def render_package_label(order):
     x = ship_to_column_right + 10
     y = _draw_section_header(pdf, "SHIP FROM", x, top - 17, 140)
     pdf.setFont("Helvetica", 8.5)
-    for line in ("LIFE-LINE", "Configured seller", "Configured warehouse", "Configured address", "Configured country"):
-        pdf.drawString(x, y, line)
+    for line in ("The Fresh Dairy Delight FZE", "+97152539846", "+971525418705", "065299221"):
+        pdf.drawString(x, y, _truncate(line, 24))
         y -= 13
 
     # Large package barcode and a prominent delivery contact block.
@@ -435,7 +419,7 @@ def render_package_label(order):
         amount = f"AED {order.total_amount:,.2f}"
     else:
         amount = "PAID"
-    pdf.setFillColor(HexColor("#ffb34d"))
+    pdf.setFillColor(HexColor("#8bd4f1"))
     pdf.setStrokeColor(INK)
     pdf.roundRect(x + 145, lower_bottom + 10, 75, 27, 6, fill=1, stroke=1)
     pdf.setFillColor(INK)

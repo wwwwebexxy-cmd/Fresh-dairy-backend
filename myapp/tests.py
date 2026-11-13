@@ -2663,7 +2663,7 @@ class OrderPackageLabelTests(TestCase):
         self.assertEqual(response.status_code, 200, response.content)
         self.assertEqual(response["Content-Type"], "application/pdf")
         self.assertIn(
-            f'LL26-{self.order.id:04d}-package-label.pdf',
+            f'FD26-{self.order.id:04d}-package-label.pdf',
             response["Content-Disposition"],
         )
         self.assertTrue(response.content.startswith(b"%PDF"))

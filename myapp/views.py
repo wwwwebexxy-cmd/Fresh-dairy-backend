@@ -88,7 +88,7 @@ logger = logging.getLogger(__name__)
 
 
 def _invoice_filename(order):
-    return f"LL26-{order.pk:04d}-tax-invoice.pdf"
+    return f"FD26-{order.pk:04d}-tax-invoice.pdf"
 
 
 class PublicProductPagination(PageNumberPagination):
@@ -443,10 +443,10 @@ def forgot_password(request):
             else:
                 try:
                     send_mail(
-                        subject="Reset your life-line password",
+                        subject="Reset your Fresh Dairy Delight password",
                         message=f"""Hello {user.first_name or 'there'},
 
-Use the link below to reset your life-line password. This link expires according to the server's password-reset policy and can only be used once.
+Use the link below to reset your Fresh Dairy Delight password. This link expires according to the server's password-reset policy and can only be used once.
 
 {reset_link}
 
@@ -456,7 +456,7 @@ If you did not request this, you can ignore this email.
                         recipient_list=[user.email],
                         html_message=f"""
 <p>Hello {greeting_name},</p>
-<p>Use the button below to reset your life-line password. This link expires according to the server's password-reset policy and can only be used once.</p>
+<p>Use the button below to reset your Fresh Dairy Delight password. This link expires according to the server's password-reset policy and can only be used once.</p>
 <p><a href="{escaped_reset_link}">Reset Password</a></p>
 <p>If you did not request this, you can ignore this email.</p>
 """,

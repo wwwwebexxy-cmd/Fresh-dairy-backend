@@ -6,9 +6,9 @@ from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.db import transaction
 from .models import *
 
-admin.site.site_header = "Order Dashboard"
-admin.site.site_title = "Order Dashboard"
-admin.site.index_title = "Order Dashboard"
+admin.site.site_header = "The Fresh Dairy Delight FZE"
+admin.site.site_title = "Fresh Dairy Admin"
+admin.site.index_title = "Fresh Dairy Management"
 
 
 def _super_admin_site_permission(_site, request):
