@@ -13,6 +13,8 @@ from django.db.models.fields import NOT_PROVIDED
 from django.db import transaction
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
+from django.http import HttpResponse
+from django.utils.text import slugify
 from rest_framework import filters, serializers, viewsets
 from rest_framework.decorators import action
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
@@ -55,6 +57,7 @@ from .models import (
 )
 from .customer_emails import send_paid_invoice_email
 from .sku import assign_generated_variant_sku, assign_generated_variant_unit_sku
+from .barcode_labels import barcode_svg_data_uri, is_valid_barcode_value, render_product_barcode_pdf
 from .permissions import IsSuperAdmin
 from .catalog_pricing import get_product_price_values
 from .serializers import CouponSerializer, OfferSerializer
@@ -249,6 +252,7 @@ class AdminProductSerializer(serializers.ModelSerializer):
 
 class AdminProductVariantSerializer(serializers.ModelSerializer):
     generate_sku = serializers.BooleanField(write_only=True, required=False, default=False)
+    barcode_svg = serializers.SerializerMethodField()
 
     class Meta:
         model = ProductVariant
@@ -257,12 +261,16 @@ class AdminProductVariantSerializer(serializers.ModelSerializer):
             "product",
             "color",
             "sku",
+            "barcode_svg",
             "generate_sku",
             "price_type",
             "price",
             "stock",
         )
         read_only_fields = ("id",)
+
+    def get_barcode_svg(self, obj):
+        return barcode_svg_data_uri(obj.sku)
 
     def validate_sku(self, value):
         value = value.strip() if isinstance(value, str) else value
@@ -320,6 +328,7 @@ class AdminProductVariantSerializer(serializers.ModelSerializer):
 
 class AdminProductVariantUnitSerializer(serializers.ModelSerializer):
     generate_sku = serializers.BooleanField(write_only=True, required=False, default=False)
+    barcode_svg = serializers.SerializerMethodField()
 
     class Meta:
         model = ProductVariantUnit
@@ -329,12 +338,16 @@ class AdminProductVariantUnitSerializer(serializers.ModelSerializer):
             "unit_type",
             "unit",
             "sku",
+            "barcode_svg",
             "grade",
             "generate_sku",
             "price",
             "stock",
         )
         read_only_fields = ("id",)
+
+    def get_barcode_svg(self, obj):
+        return barcode_svg_data_uri(obj.sku)
 
     def validate_sku(self, value):
         value = value.strip() if isinstance(value, str) else value
@@ -612,6 +625,80 @@ class AdminProductViewSet(AdminModelViewSet):
         "variants__sizes__sku",
     )
     ordering = ("-created_at",)
+
+    @action(detail=True, methods=("post",), url_path="barcodes-pdf")
+    def barcodes_pdf(self, request, pk=None):
+        """Generate any missing sellable-item SKUs and download their labels."""
+        product = self.get_object()
+        entries = []
+
+        with transaction.atomic():
+            variants = ProductVariant.objects.select_for_update().select_related(
+                "color"
+            ).filter(product_id=product.pk).order_by("id")
+
+            for variant in variants:
+                if variant.price_type == "multiple":
+                    units = ProductVariantUnit.objects.select_for_update().select_related(
+                        "unit_type", "unit"
+                    ).filter(variant_id=variant.pk).order_by("id")
+                    for unit in units:
+                        sku = assign_generated_variant_unit_sku(unit)
+                        unit_label = " / ".join(
+                            part
+                            for part in (
+                                unit.unit_type.name if unit.unit_type else "",
+                                unit.unit.name if unit.unit else "",
+                                unit.grade,
+                            )
+                            if part
+                        )
+                        entries.append({
+                            "barcode": sku,
+                            "variant_label": " · ".join(
+                                part for part in (
+                                    variant.color.name if variant.color else "Variant",
+                                    unit_label,
+                                ) if part
+                            ),
+                        })
+                else:
+                    sku = assign_generated_variant_sku(variant)
+                    entries.append({
+                        "barcode": sku,
+                        "variant_label": variant.color.name if variant.color else "Variant",
+                    })
+
+            if not entries:
+                raise serializers.ValidationError({
+                    "barcode": "Add at least one sellable variant or unit before generating barcodes."
+                })
+
+            invalid_entries = [entry for entry in entries if not is_valid_barcode_value(entry["barcode"])]
+            if invalid_entries:
+                raise serializers.ValidationError({
+                    "barcode": (
+                        "Every SKU used as a Code 128 barcode must contain 1 to 36 printable ASCII characters. "
+                        f"Check: {', '.join(entry['barcode'] for entry in invalid_entries)}"
+                    )
+                })
+
+            self._audit(
+                "update",
+                product,
+                description=f"Generated or confirmed {len(entries)} product variant barcode(s).",
+            )
+
+        try:
+            pdf_bytes = render_product_barcode_pdf(product.name, entries)
+        except ValueError as error:
+            raise serializers.ValidationError({"barcode": str(error)}) from error
+
+        filename = f"{slugify(product.name) or f'product-{product.pk}'}-barcodes.pdf"
+        response = HttpResponse(pdf_bytes, content_type="application/pdf")
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
+        response["Cache-Control"] = "no-store"
+        return response
 
     @action(detail=True, methods=("post",), url_path="duplicate")
     def duplicate(self, request, pk=None):
