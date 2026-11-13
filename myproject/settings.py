@@ -17,12 +17,21 @@ load_dotenv(BASE_DIR / ".env")
 
 # SECURITY
 
+<<<<<<< HEAD
 SECRET_KEY = os.getenv("FRESH_DAIRY_SECRET_KEY", "")
 
 DEBUG = os.getenv("FRESH_DAIRY_DEBUG", "False").lower() in ("true", "1", "t")
 _IS_TESTING = "test" in sys.argv
 
 _allowed_hosts_value = os.getenv("FRESH_DAIRY_ALLOWED_HOSTS", "")
+=======
+SECRET_KEY = os.getenv("SECRET_KEY", "")
+
+DEBUG = os.getenv("DEBUG", "False").lower() in ("true", "1", "t")
+_IS_TESTING = "test" in sys.argv
+
+_allowed_hosts_value = os.getenv("ALLOWED_HOSTS", "")
+>>>>>>> 61e533da482d0c7c35c37f72a5e9f2e6eb4998c3
 ALLOWED_HOSTS = [host.strip() for host in _allowed_hosts_value.split(",") if host.strip()]
 if not DEBUG:
     if (
@@ -102,11 +111,19 @@ WSGI_APPLICATION = "myproject.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
+<<<<<<< HEAD
         "NAME": os.getenv("FRESH_DAIRY_DB_NAME"),
         "USER": os.getenv("FRESH_DAIRY_DB_USER"),
         "PASSWORD": os.getenv("FRESH_DAIRY_DB_PASSWORD"),
         "HOST": os.getenv("FRESH_DAIRY_DB_HOST","127.0.0.1"),
         "PORT": os.getenv("FRESH_DAIRY_DB_PORT","3306"),
+=======
+        "NAME": os.getenv("DB_NAME"),
+        "USER": os.getenv("DB_USER"),
+        "PASSWORD": os.getenv("DB_PASSWORD"),
+        "HOST": os.getenv("DB_HOST","127.0.0.1"),
+        "PORT": os.getenv("DB_PORT","3306"),
+>>>>>>> 61e533da482d0c7c35c37f72a5e9f2e6eb4998c3
     }
 }
 
@@ -157,9 +174,13 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 # Media
 
 MEDIA_URL = "/media/"
+<<<<<<< HEAD
 MEDIA_ROOT = Path(
     os.getenv("FRESH_DAIRY_MEDIA_ROOT", str(BASE_DIR / "fresh_dairy_media"))
 )
+=======
+MEDIA_ROOT = BASE_DIR / "uploads"
+>>>>>>> 61e533da482d0c7c35c37f72a5e9f2e6eb4998c3
 
 
 # User Model
@@ -179,11 +200,19 @@ REST_FRAMEWORK = {
         "rest_framework.throttling.UserRateThrottle",
     ),
     "DEFAULT_THROTTLE_RATES": {
+<<<<<<< HEAD
         "anon": os.getenv("FRESH_DAIRY_API_ANON_RATE", "120/min"),
         "user": os.getenv("FRESH_DAIRY_API_USER_RATE", "600/min"),
         "auth": os.getenv("FRESH_DAIRY_AUTH_RATE", "10/min"),
         "payment": os.getenv("FRESH_DAIRY_PAYMENT_RATE", "10/min"),
         "search": os.getenv("FRESH_DAIRY_SEARCH_RATE", "60/min"),
+=======
+        "anon": os.getenv("API_ANON_RATE", "120/min"),
+        "user": os.getenv("API_USER_RATE", "600/min"),
+        "auth": os.getenv("AUTH_RATE", "10/min"),
+        "payment": os.getenv("PAYMENT_RATE", "10/min"),
+        "search": os.getenv("SEARCH_RATE", "60/min"),
+>>>>>>> 61e533da482d0c7c35c37f72a5e9f2e6eb4998c3
     },
     "PAGE_SIZE": 50,
 }
@@ -204,6 +233,7 @@ SIMPLE_JWT = {
 # Browser JWTs stay in HttpOnly cookies.  `None` is only appropriate where
 # the storefront and API are genuinely cross-site; it requires strict CORS and
 # CSRF configuration below.  Lax is the safer default for same-site subdomains.
+<<<<<<< HEAD
 JWT_ACCESS_COOKIE_NAME = "fresh_dairy_access"
 JWT_REFRESH_COOKIE_NAME = "fresh_dairy_refresh"
 JWT_ADMIN_ACCESS_COOKIE_NAME = os.getenv(
@@ -216,6 +246,20 @@ JWT_ADMIN_REFRESH_COOKIE_NAME = os.getenv(
 ).strip()
 JWT_COOKIE_DOMAIN = os.getenv("FRESH_DAIRY_JWT_COOKIE_DOMAIN", "").strip()
 JWT_COOKIE_SAMESITE = os.getenv("FRESH_DAIRY_JWT_COOKIE_SAMESITE", "Lax").strip().title()
+=======
+JWT_ACCESS_COOKIE_NAME = "life_line_access"
+JWT_REFRESH_COOKIE_NAME = "life_line_refresh"
+JWT_ADMIN_ACCESS_COOKIE_NAME = os.getenv(
+    "JWT_ADMIN_ACCESS_COOKIE_NAME",
+    "life_line_admin_access",
+).strip()
+JWT_ADMIN_REFRESH_COOKIE_NAME = os.getenv(
+    "JWT_ADMIN_REFRESH_COOKIE_NAME",
+    "life_line_admin_refresh",
+).strip()
+JWT_COOKIE_DOMAIN = os.getenv("JWT_COOKIE_DOMAIN", "").strip()
+JWT_COOKIE_SAMESITE = os.getenv("JWT_COOKIE_SAMESITE", "Lax").strip().title()
+>>>>>>> 61e533da482d0c7c35c37f72a5e9f2e6eb4998c3
 if JWT_COOKIE_SAMESITE not in {"Lax", "Strict", "None"}:
     raise RuntimeError("JWT_COOKIE_SAMESITE must be Lax, Strict, or None")
 JWT_COOKIE_SECURE = not DEBUG
@@ -223,12 +267,17 @@ JWT_COOKIE_SECURE = not DEBUG
 
 # Google Login
 
+<<<<<<< HEAD
 GOOGLE_CLIENT_ID = os.getenv("FRESH_DAIRY_GOOGLE_CLIENT_ID", "").strip()
+=======
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "").strip()
+>>>>>>> 61e533da482d0c7c35c37f72a5e9f2e6eb4998c3
 
 
 # Email
 
 EMAIL_BACKEND = os.getenv(
+<<<<<<< HEAD
     "FRESH_DAIRY_EMAIL_BACKEND",
     "django.core.mail.backends.smtp.EmailBackend",
 ).strip()
@@ -264,24 +313,73 @@ else:
     DEFAULT_FROM_EMAIL = os.getenv(
         "FRESH_DAIRY_DEFAULT_FROM_EMAIL",
         EMAIL_HOST_USER or "no-reply@fresh-dairy.invalid",
+=======
+    "EMAIL_BACKEND",
+    "django.core.mail.backends.smtp.EmailBackend",
+).strip()
+
+EMAIL_PROVIDER = os.getenv("EMAIL_PROVIDER", "smtp").strip().lower()
+if EMAIL_PROVIDER == "mailtrap":
+    EMAIL_HOST = os.getenv(
+        "MAILTRAP_SMTP_HOST",
+        "sandbox.smtp.mailtrap.io",
+    ).strip()
+    EMAIL_PORT = int(os.getenv("MAILTRAP_SMTP_PORT", "2525"))
+    EMAIL_USE_TLS = True
+    EMAIL_USE_SSL = False
+    EMAIL_HOST_USER = os.getenv(
+        "MAILTRAP_SMTP_USERNAME",
+        os.getenv("EMAIL_HOST_USER", ""),
+    ).strip()
+    EMAIL_HOST_PASSWORD = os.getenv(
+        "MAILTRAP_SMTP_PASSWORD",
+        os.getenv("EMAIL_HOST_PASSWORD", ""),
+    )
+    DEFAULT_FROM_EMAIL = os.getenv(
+        "MAILTRAP_FROM_EMAIL",
+        os.getenv("DEFAULT_FROM_EMAIL", "no-reply@life-line.test"),
+    ).strip()
+else:
+    EMAIL_HOST = os.getenv("EMAIL_HOST", "smtp.gmail.com").strip()
+    EMAIL_PORT = int(os.getenv("EMAIL_PORT", "587"))
+    EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "true").lower() in ("true", "1", "t")
+    EMAIL_USE_SSL = os.getenv("EMAIL_USE_SSL", "false").lower() in ("true", "1", "t")
+    EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "").strip()
+    EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
+    DEFAULT_FROM_EMAIL = os.getenv(
+        "DEFAULT_FROM_EMAIL",
+        EMAIL_HOST_USER or "no-reply@life-line.invalid",
+>>>>>>> 61e533da482d0c7c35c37f72a5e9f2e6eb4998c3
     ).strip()
 
 if EMAIL_USE_TLS and EMAIL_USE_SSL:
     raise RuntimeError("EMAIL_USE_TLS and EMAIL_USE_SSL cannot both be enabled")
 
+<<<<<<< HEAD
 EMAIL_TIMEOUT = int(os.getenv("FRESH_DAIRY_EMAIL_TIMEOUT", "20"))
+=======
+EMAIL_TIMEOUT = int(os.getenv("EMAIL_TIMEOUT", "20"))
+>>>>>>> 61e533da482d0c7c35c37f72a5e9f2e6eb4998c3
 # New-order notifications are sent here. Falling back to the SMTP username is
 # convenient for a temporary Mailtrap/Gmail setup while still allowing a
 # separate owner inbox in production.
 ORDER_NOTIFICATION_EMAIL = os.getenv(
+<<<<<<< HEAD
     "FRESH_DAIRY_ORDER_NOTIFICATION_EMAIL",
+=======
+    "ORDER_NOTIFICATION_EMAIL",
+>>>>>>> 61e533da482d0c7c35c37f72a5e9f2e6eb4998c3
     EMAIL_HOST_USER,
 ).strip()
 
 
 # CORS: browser cookies require an explicit, trusted storefront allowlist.
 # Never enable a wildcard origin together with credentials.
+<<<<<<< HEAD
 _storefront_origins = os.getenv("FRESH_DAIRY_STOREFRONT_ORIGINS", "")
+=======
+_storefront_origins = os.getenv("STOREFRONT_ORIGINS", os.getenv("CORS_ALLOWED_ORIGINS", ""))
+>>>>>>> 61e533da482d0c7c35c37f72a5e9f2e6eb4998c3
 CORS_ALLOWED_ORIGINS = [origin.strip().rstrip("/") for origin in _storefront_origins.split(",") if origin.strip()]
 # Local Vite development uses HTTP localhost origins. Keep these confined to
 # DEBUG builds; production remains an explicit HTTPS storefront allowlist.
@@ -308,7 +406,11 @@ SECURE_CROSS_ORIGIN_OPENER_POLICY = "same-origin"
 SECURE_SSL_REDIRECT = not (DEBUG or _IS_TESTING)
 # The reverse proxy/load balancer must overwrite X-Forwarded-Proto, not pass a
 # client supplied value through.  This lets Django recognise HTTPS termination.
+<<<<<<< HEAD
 if not DEBUG and os.getenv("FRESH_DAIRY_TRUST_PROXY_SSL_HEADER", "true").lower() in ("true", "1", "t"):
+=======
+if not DEBUG and os.getenv("TRUST_PROXY_SSL_HEADER", "true").lower() in ("true", "1", "t"):
+>>>>>>> 61e533da482d0c7c35c37f72a5e9f2e6eb4998c3
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SESSION_COOKIE_SECURE = not DEBUG
 SESSION_COOKIE_HTTPONLY = True
@@ -318,13 +420,22 @@ CSRF_COOKIE_SECURE = not DEBUG
 # X-CSRFToken header. Authentication JWTs remain HttpOnly.
 CSRF_COOKIE_HTTPONLY = False
 CSRF_COOKIE_SAMESITE = JWT_COOKIE_SAMESITE
+<<<<<<< HEAD
 SECURE_HSTS_SECONDS = int(os.getenv("FRESH_DAIRY_SECURE_HSTS_SECONDS", "31536000" if not DEBUG else "0"))
+=======
+SECURE_HSTS_SECONDS = int(os.getenv("SECURE_HSTS_SECONDS", "31536000" if not DEBUG else "0"))
+>>>>>>> 61e533da482d0c7c35c37f72a5e9f2e6eb4998c3
 SECURE_HSTS_INCLUDE_SUBDOMAINS = not DEBUG
 SECURE_HSTS_PRELOAD = not DEBUG
 
 # Reject oversized request bodies before application code parses them.
+<<<<<<< HEAD
 DATA_UPLOAD_MAX_MEMORY_SIZE = int(os.getenv("FRESH_DAIRY_DATA_UPLOAD_MAX_MEMORY_SIZE", str(10 * 1024 * 1024)))
 FILE_UPLOAD_MAX_MEMORY_SIZE = int(os.getenv("FRESH_DAIRY_FILE_UPLOAD_MAX_MEMORY_SIZE", str(5 * 1024 * 1024)))
+=======
+DATA_UPLOAD_MAX_MEMORY_SIZE = int(os.getenv("DATA_UPLOAD_MAX_MEMORY_SIZE", str(10 * 1024 * 1024)))
+FILE_UPLOAD_MAX_MEMORY_SIZE = int(os.getenv("FILE_UPLOAD_MAX_MEMORY_SIZE", str(5 * 1024 * 1024)))
+>>>>>>> 61e533da482d0c7c35c37f72a5e9f2e6eb4998c3
 
 # Throttling, token blacklisting, and abuse protections must use a shared
 # cache in production. LocMemCache is safe only for a single local process.
@@ -336,7 +447,11 @@ if DEBUG or _IS_TESTING:
         }
     }
 else:
+<<<<<<< HEAD
     MEMCACHED_LOCATION = os.getenv("FRESH_DAIRY_MEMCACHED_LOCATION", "").strip()
+=======
+    MEMCACHED_LOCATION = os.getenv("MEMCACHED_LOCATION", "").strip()
+>>>>>>> 61e533da482d0c7c35c37f72a5e9f2e6eb4998c3
     if not MEMCACHED_LOCATION:
         raise RuntimeError(
             "MEMCACHED_LOCATION must be configured when DEBUG=False "
@@ -353,6 +468,7 @@ else:
             },
         }
     }
+<<<<<<< HEAD
 GLOBAL_RATE_LIMIT = int(os.getenv("FRESH_DAIRY_GLOBAL_RATE_LIMIT", "300"))
 GLOBAL_RATE_WINDOW = int(os.getenv("FRESH_DAIRY_GLOBAL_RATE_WINDOW", "60"))
 TRUSTED_PROXY_IPS = tuple(
@@ -362,22 +478,42 @@ TRUSTED_PROXY_IPS = tuple(
 )
 ADMIN_LOGIN_MAX_ATTEMPTS = int(os.getenv("FRESH_DAIRY_ADMIN_LOGIN_MAX_ATTEMPTS", "5"))
 ADMIN_LOGIN_WINDOW = int(os.getenv("FRESH_DAIRY_ADMIN_LOGIN_WINDOW", "900"))
+=======
+GLOBAL_RATE_LIMIT = int(os.getenv("GLOBAL_RATE_LIMIT", "300"))
+GLOBAL_RATE_WINDOW = int(os.getenv("GLOBAL_RATE_WINDOW", "60"))
+TRUSTED_PROXY_IPS = tuple(
+    ip.strip()
+    for ip in os.getenv("TRUSTED_PROXY_IPS", "127.0.0.1,::1").split(",")
+    if ip.strip()
+)
+ADMIN_LOGIN_MAX_ATTEMPTS = int(os.getenv("ADMIN_LOGIN_MAX_ATTEMPTS", "5"))
+ADMIN_LOGIN_WINDOW = int(os.getenv("ADMIN_LOGIN_WINDOW", "900"))
+>>>>>>> 61e533da482d0c7c35c37f72a5e9f2e6eb4998c3
 
 
 # Frontend URL
 
+<<<<<<< HEAD
 SITE_URL = os.getenv("FRESH_DAIRY_SITE_URL", "http://localhost:5173").rstrip("/")
+=======
+SITE_URL = os.getenv("SITE_URL", "http://localhost:5173").rstrip("/")
+>>>>>>> 61e533da482d0c7c35c37f72a5e9f2e6eb4998c3
 if not (DEBUG or _IS_TESTING) and not SITE_URL.startswith("https://"):
     raise RuntimeError("SITE_URL must use HTTPS when DEBUG=False")
 
 # Django's password-reset token generator checks this value when validating a
 # token. Keep the lifetime explicit so local and production deployments use
 # the same security policy instead of relying on Django's default.
+<<<<<<< HEAD
 PASSWORD_RESET_TIMEOUT = int(os.getenv("FRESH_DAIRY_PASSWORD_RESET_TIMEOUT", "3600"))
+=======
+PASSWORD_RESET_TIMEOUT = int(os.getenv("PASSWORD_RESET_TIMEOUT", "3600"))
+>>>>>>> 61e533da482d0c7c35c37f72a5e9f2e6eb4998c3
 
 
 # Cashfree Payments
 
+<<<<<<< HEAD
 CASHFREE_ENABLED = os.getenv("FRESH_DAIRY_CASHFREE_ENABLED", "false").strip().lower() in {"1", "true", "yes", "on"}
 CASHFREE_ENV = os.getenv("FRESH_DAIRY_CASHFREE_ENV", "sandbox").strip().lower()
 CASHFREE_CLIENT_ID = os.getenv("FRESH_DAIRY_CASHFREE_CLIENT_ID", "").strip()
@@ -397,6 +533,27 @@ WHATSAPP_ACCESS_TOKEN = os.getenv("FRESH_DAIRY_WHATSAPP_ACCESS_TOKEN", "")
 WHATSAPP_PHONE_NUMBER_ID = os.getenv("FRESH_DAIRY_WHATSAPP_PHONE_NUMBER_ID", "")
 WHATSAPP_OWNER_PHONE = os.getenv("FRESH_DAIRY_WHATSAPP_OWNER_PHONE", "")
 WHATSAPP_API_VERSION = os.getenv("FRESH_DAIRY_WHATSAPP_API_VERSION", "v22.0")
+=======
+CASHFREE_ENABLED = os.getenv("CASHFREE_ENABLED", "false").strip().lower() in {"1", "true", "yes", "on"}
+CASHFREE_ENV = os.getenv("CASHFREE_ENV", "sandbox").strip().lower()
+CASHFREE_CLIENT_ID = os.getenv("CASHFREE_CLIENT_ID", "").strip()
+CASHFREE_CLIENT_SECRET = os.getenv("CASHFREE_CLIENT_SECRET", "").strip()
+CASHFREE_ORDER_CURRENCY = os.getenv("CASHFREE_ORDER_CURRENCY", "AED").strip().upper()
+CASHFREE_WEBHOOK_URL = os.getenv("CASHFREE_WEBHOOK_URL", "").strip()
+
+# Legacy Stripe settings remain available for historical checkout records.
+
+STRIPE_PUBLISHABLE_KEY = os.getenv("STRIPE_PUBLISHABLE_KEY")
+STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
+STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET")
+
+# WhatsApp Cloud API. Configure the owner number as digits only, including the
+# country code, as required by Meta's API.
+WHATSAPP_ACCESS_TOKEN = os.getenv("WHATSAPP_ACCESS_TOKEN", "")
+WHATSAPP_PHONE_NUMBER_ID = os.getenv("WHATSAPP_PHONE_NUMBER_ID", "")
+WHATSAPP_OWNER_PHONE = os.getenv("WHATSAPP_OWNER_PHONE", "")
+WHATSAPP_API_VERSION = os.getenv("WHATSAPP_API_VERSION", "v22.0")
+>>>>>>> 61e533da482d0c7c35c37f72a5e9f2e6eb4998c3
 
 
 # Default primary key
